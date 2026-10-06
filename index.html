@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mystic Tarot｜塔羅牌占卜</title>
+<style>
+:root{
+  --bg1:#080610; --bg2:#160a2d; --bg3:#241046;
+  --gold:#d9b96f; --gold2:#f2dda4;
+  --violet:#7d55cf; --text:#f8f4fb; --muted:#cbbfd8;
+  --panel:rgba(18,10,34,.88);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; color:var(--text);
+  font-family:"Noto Serif TC","Microsoft JhengHei",sans-serif;
+  background:
+    radial-gradient(circle at 15% 10%,rgba(125,85,207,.2),transparent 28%),
+    radial-gradient(circle at 85% 15%,rgba(217,185,111,.12),transparent 24%),
+    linear-gradient(150deg,var(--bg1),var(--bg2) 50%,#090611);
+}
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; opacity:.35;
+  background-image:
+    radial-gradient(circle,rgba(255,255,255,.9) 0 1px,transparent 1.5px),
+    radial-gradient(circle,rgba(225,209,255,.65) 0 1px,transparent 1.5px);
+  background-size:80px 80px,130px 130px;
+  background-position:0 0,25px 50px;
+}
+button{font:inherit}
+.app{width:min(1180px,calc(100% - 28px));margin:auto;padding:28px 0 90px}
+.brand{display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:24px}
+.brand .mark{
+  width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  border:1px solid rgba(217,185,111,.7);color:var(--gold2);
+  background:radial-gradient(circle,#54377e,#1d102f 70%);
+  box-shadow:0 0 28px rgba(125,85,207,.3)
+}
+.brand h1{margin:0;color:var(--gold2);letter-spacing:.08em}
+.screen{display:none}
+.screen.active{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.panel{
+  background:linear-gradient(145deg,rgba(48,27,79,.88),rgba(12,8,24,.94));
+  border:1px solid rgba(217,185,111,.25);border-radius:24px;
+  box-shadow:0 24px 70px rgba(0,0,0,.38)
+}
+.hero{display:grid;grid-template-columns:1.08fr .92fr;gap:42px;align-items:center;padding:clamp(28px,5vw,60px);min-height:540px}
+.eyebrow{color:var(--gold);font-size:.82rem;letter-spacing:.18em;font-weight:700;text-transform:uppercase}
+.hero h2,.head h2{color:#fff9e9}
+.hero h2{font-size:clamp(2.2rem,6vw,4.6rem);line-height:1.06;margin:12px 0 18px}
+.hero p,.head p{color:var(--muted);line-height:1.8}
+.setup{padding:24px;border:1px solid rgba(217,185,111,.22);border-radius:20px;background:rgba(7,5,15,.4)}
+.setup h3{margin-top:0;color:var(--gold2)}
+.label{display:block;margin:18px 0 9px;font-weight:700}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{
+  color:var(--text);background:rgba(71,43,107,.55);border:1px solid rgba(125,85,207,.35);
+  border-radius:13px;padding:12px;text-align:left;cursor:pointer;transition:.2s
+}
+.choice:hover{transform:translateY(-2px);border-color:var(--gold)}
+.choice.selected{background:linear-gradient(145deg,#6b47ad,#42256f);border-color:var(--gold)}
+.choice small{display:block;color:#c8bad9;margin-top:3px;font-size:.76rem}
+.primary{
+  width:100%;margin-top:20px;border:0;border-radius:13px;padding:14px;
+  font-weight:800;cursor:pointer;color:#281833;
+  background:linear-gradient(135deg,#f0dda2,#c89e4e)
+}
+.primary:disabled{opacity:.4;cursor:not-allowed}
+.hint{margin-top:10px;color:#a99bbb;font-size:.8rem}
+.head{text-align:center;padding:34px 20px 0}
+.head h2{font-size:clamp(1.8rem,4vw,2.8rem);margin:8px 0 0}
+.head p{max-width:720px;margin:10px auto 0}
+
+/* shuffle */
+.shuffle-panel{min-height:570px;display:grid;place-items:center;padding:35px}
+.stack{position:relative;width:205px;height:310px;margin:28px auto 0}
+.shuffle-card{
+  position:absolute;inset:0;border:2px solid var(--gold);border-radius:16px;
+  background:
+    radial-gradient(circle at 50% 50%,rgba(240,219,167,.16) 0 5%,transparent 5.5%),
+    repeating-radial-gradient(circle at 50% 50%,rgba(217,185,111,.16) 0 1px,transparent 2px 14px),
+    linear-gradient(145deg,#321954,#0e081d 78%);
+  box-shadow:0 18px 36px rgba(0,0,0,.35)
+}
+.shuffle-card::after{
+  content:"☾\A✦";white-space:pre;position:absolute;inset:12px;display:grid;place-items:center;
+  border:1px solid rgba(217,185,111,.55);color:var(--gold2);font-size:38px;line-height:1.6
+}
+.shuffle-card:nth-child(1){animation:a 1s ease-in-out infinite}
+.shuffle-card:nth-child(2){animation:b 1s ease-in-out .12s infinite}
+.shuffle-card:nth-child(3){animation:c 1s ease-in-out .24s infinite}
+.shuffle-card:nth-child(4){animation:d 1s ease-in-out .36s infinite}
+@keyframes a{50%{transform:translateX(-110px) rotate(-8deg)}}
+@keyframes b{50%{transform:translateX(110px) rotate(8deg)}}
+@keyframes c{50%{transform:translateY(-38px) rotate(4deg)}}
+@keyframes d{50%{transform:translateY(38px) rotate(-4deg)}}
+
+/* draw */
+.draw-panel,.result-panel{padding-bottom:38px}
+.status{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px 0 24px}
+.pill{border:1px solid rgba(217,185,111,.28);border-radius:999px;padding:7px 11px;color:#e9d8b1;background:rgba(217,185,111,.06);font-size:.84rem}
+.deck{display:grid;grid-template-columns:repeat(5,minmax(90px,1fr));gap:18px;max-width:930px;margin:auto;padding:0 22px}
+.pick{
+  aspect-ratio:.6;min-height:190px;border:1.8px solid var(--gold);border-radius:14px;
+  cursor:pointer;transition:.22s;background:
+  radial-gradient(circle at 50% 50%,rgba(240,219,167,.17) 0 5%,transparent 5.5%),
+  repeating-radial-gradient(circle at 50% 50%,rgba(217,185,111,.14) 0 1px,transparent 2px 14px),
+  linear-gradient(145deg,#2f1854,#0d071b 78%);
+  position:relative
+}
+.pick::after{
+  content:"☾\A✦";white-space:pre;position:absolute;inset:9px;display:grid;place-items:center;
+  border:1px solid rgba(217,185,111,.55);color:var(--gold2);font-size:30px;line-height:1.4
+}
+.pick:hover:not(:disabled){transform:translateY(-9px) scale(1.02)}
+.pick:disabled{opacity:.25;cursor:default}
+.progress{text-align:center;color:#c9bad8;min-height:28px;margin-top:24px}
+
+/* result */
+.result-grid{
+  display:grid;grid-template-columns:repeat(var(--cols,1),minmax(0,1fr));
+  gap:22px;padding:24px clamp(16px,4vw,46px) 0
+}
+.reading{border:1px solid rgba(217,185,111,.24);border-radius:18px;overflow:hidden;background:rgba(8,5,16,.55)}
+.visual{display:grid;place-items:center;min-height:385px;padding:22px;background:radial-gradient(circle at 50% 25%,rgba(125,85,207,.14),transparent 42%)}
+.visual img{width:min(100%,245px);max-height:370px;object-fit:contain;filter:drop-shadow(0 15px 28px rgba(0,0,0,.48));animation:flip .7s ease}
+.visual img.reversed{transform:rotate(180deg)}
+@keyframes flip{from{opacity:.1;transform:rotateY(90deg)}to{opacity:1;transform:rotateY(0)}}
+.visual img.reversed{animation:flipReverse .7s ease forwards}
+@keyframes flipReverse{from{opacity:.1;transform:rotateY(90deg) rotate(180deg)}to{opacity:1;transform:rotateY(0) rotate(180deg)}}
+.fallback{
+  display:none;width:min(100%,245px);aspect-ratio:.6;border:2px solid var(--gold);border-radius:12px;
+  place-items:center;text-align:center;color:var(--gold2);padding:18px;
+  background:linear-gradient(145deg,#301850,#0f081e)
+}
+.body{padding:20px}
+.pos{color:var(--gold);font-size:.76rem;letter-spacing:.13em;font-weight:800}
+.title-row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin:7px 0 14px}
+.title-row h3{margin:0;color:#fff7e5}
+.badge{font-size:.74rem;padding:5px 8px;border-radius:999px;background:rgba(125,85,207,.23);border:1px solid rgba(125,85,207,.38)}
+.block{padding-top:14px;margin-top:14px;border-top:1px solid rgba(255,255,255,.07)}
+.block strong{display:block;color:#e3cc8c;margin-bottom:6px;font-size:.88rem}
+.block p{margin:0;color:#d2c7dc;line-height:1.75;font-size:.92rem}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:30px 20px 8px}
+.action{border:1px solid rgba(125,85,207,.38);background:rgba(66,38,105,.68);color:var(--text);border-radius:12px;padding:10px 15px;cursor:pointer;font-weight:700}
+.action.gold{color:#281833;background:linear-gradient(135deg,#f0dda2,#c89e4e);border:0}
+footer{width:min(1120px,calc(100% - 28px));margin:0 auto 28px;text-align:center;color:#9f91af;line-height:1.7;font-size:.77rem}
+footer a{color:#cbb574}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,18px);opacity:0;transition:.22s;background:#281742;border:1px solid rgba(217,185,111,.4);border-radius:10px;padding:9px 13px;z-index:10}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:820px){
+  .hero{grid-template-columns:1fr}
+  .deck{grid-template-columns:repeat(2,minmax(110px,1fr))}
+  .result-grid{grid-template-columns:1fr!important}
+}
+@media(max-width:480px){
+  .choices{grid-template-columns:1fr}
+  .app{width:calc(100% - 18px)}
+  .pick{min-height:165px}
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="brand"><div class="mark">✦</div><h1>Mystic Tarot</h1></div>
+
+  <section id="home" class="screen active">
+    <div class="panel hero">
+      <div>
+        <div class="eyebrow">Major Arcana · 22</div>
+        <h2>讓牌面替你<br>照見一個方向</h2>
+        <p>選擇你最在意的主題，再決定要抽一張牌獲得快速建議，或使用三張牌陣看看「過去、現在、未來」。</p>
+      </div>
+      <div class="setup">
+        <h3>開始前，先做兩個選擇</h3>
+        <span class="label">① 占卜主題</span>
+        <div id="themeChoices" class="choices">
+          <button class="choice" data-theme="love">感情<small>關係、互動與心意</small></button>
+          <button class="choice" data-theme="study">學業<small>學習、考試與成長</small></button>
+          <button class="choice" data-theme="work">工作<small>職涯、任務與方向</small></button>
+          <button class="choice" data-theme="social">人際<small>朋友、合作與界線</small></button>
+          <button class="choice" data-theme="daily">今日運勢<small>今天值得留意的訊息</small></button>
+        </div>
+
+        <span class="label">② 占卜方式</span>
+        <div id="modeChoices" class="choices">
+          <button class="choice" data-mode="single">單張建議<small>快速獲得一個提醒</small></button>
+          <button class="choice" data-mode="triple">三張牌陣<small>過去・現在・未來</small></button>
+        </div>
+
+        <button id="startBtn" class="primary" disabled>開始占卜</button>
+        <div class="hint">請先選擇一個主題與占卜方式。</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="shuffle" class="screen">
+    <div class="panel shuffle-panel">
+      <div>
+        <div class="head">
+          <div class="eyebrow">Shuffling</div>
+          <h2>正在洗牌</h2>
+          <p>在心裡想著你的主題，等牌面安靜下來。</p>
+        </div>
+        <div class="stack">
+          <div class="shuffle-card"></div><div class="shuffle-card"></div>
+          <div class="shuffle-card"></div><div class="shuffle-card"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="draw" class="screen">
+    <div class="panel draw-panel">
+      <div class="head">
+        <div class="eyebrow">Choose Your Card</div>
+        <h2 id="drawTitle">選一張牌</h2>
+        <p id="drawDesc"></p>
+      </div>
+      <div class="status">
+        <span id="themePill" class="pill"></span>
+        <span id="modePill" class="pill"></span>
+      </div>
+      <div id="deck" class="deck"></div>
+      <div id="progress" class="progress"></div>
+    </div>
+  </section>
+
+  <section id="result" class="screen">
+    <div class="panel result-panel">
+      <div class="head">
+        <div class="eyebrow">Your Reading</div>
+        <h2>這次的牌面訊息</h2>
+        <p id="resultSub"></p>
+      </div>
+      <div id="resultGrid" class="result-grid"></div>
+      <div class="actions">
+        <button id="restartBtn" class="action gold">重新占卜</button>
+        <button id="againBtn" class="action">再抽一張</button>
+        <button id="homeBtn" class="action">回到首頁</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div>本網站占卜結果僅供娛樂與自我反思參考，不應作為醫療、法律、財務或其他重大決策的依據。</div>
+  <div>塔羅牌圖像使用由 Wikimedia Commons「Vectorized Tarot by Immanuelle」公有領域版本轉製的 WebP 圖片。</div>
+</footer>
+<div id="toast" class="toast"></div>
+
+<script>
+const THEMES={
+ love:{label:"感情",prefix:"在感情上"},
+ study:{label:"學業",prefix:"在學業上"},
+ work:{label:"工作",prefix:"在工作上"},
+ social:{label:"人際",prefix:"在人際關係上"},
+ daily:{label:"今日運勢",prefix:"今天"}
+};
+const MODES={
+ single:{label:"單張建議",positions:["本次訊息"]},
+ triple:{label:"三張牌陣",positions:["過去","現在","未來"]}
+};
+
+const baseCards=[
+["00_Fool","愚者","The Fool","新的開始、自由、冒險、保持開放。","衝動、準備不足、逃避責任、風險判斷失衡。","勇敢和莽撞只差在是否願意看清風險。"],
+["01_Magician","魔術師","The Magician","行動力、資源整合、自信、把想法化為成果。","能力分散、溝通失準、過度自信、資源沒有用在重點。","你不一定缺少資源，可能只是還沒把它們放在同一個方向。"],
+["02_High_Priestess","女祭司","The High Priestess","直覺、觀察、內在智慧、暫時保留。","忽略直覺、資訊不清、過度封閉、猜測太多。","不是所有問題都要立即回答，有時先觀察能看到更多。"],
+["03_Empress","皇后","The Empress","滋養、創造、豐盛、照顧與成長。","過度付出、依賴、忽略自己、成長受阻。","照顧別人之前，也別忘了自己同樣需要被照顧。"],
+["04_Emperor","皇帝","The Emperor","秩序、責任、穩定、規劃與界線。","僵化、控制、權責混亂、過度強勢。","真正的穩定不是控制所有事情，而是知道哪些事情該由你負責。"],
+["05_Hierophant","教皇","The Hierophant","傳統、學習、規範、指導與價值觀。","質疑規則、形式僵化、價值衝突、需要走自己的路。","規則可以提供方向，但不是每一條舊路都適合現在的你。"],
+["06_Lovers","戀人","The Lovers","連結、選擇、價值一致、真誠關係。","價值不合、猶豫、失衡、溝通落差。","重要的選擇往往不是選哪個最好，而是選哪個最符合你的價值。"],
+["07_Chariot","戰車","The Chariot","意志、推進、掌控方向、克服阻力。","方向混亂、急躁、失去控制、用力過度。","速度很重要，但方向錯了，跑得越快反而離目標越遠。"],
+["08_Strength","力量","Strength","勇氣、耐心、自我掌控、溫柔的力量。","自信不足、壓抑、情緒失控、懷疑自己。","真正的力量不一定是硬撐，而是能穩定地面對自己的情緒。"],
+["09_Hermit","隱者","The Hermit","獨處、反思、尋找方向、內在探索。","孤立、逃避、過度封閉、找不到方向。","暫時離開雜音是為了聽見自己，而不是永遠躲起來。"],
+["10_Wheel_of_Fortune","命運之輪","Wheel of Fortune","轉機、變化、循環、時機。","阻滯、反覆、時機未到、抗拒改變。","你無法控制所有變化，但可以決定變化來時怎麼回應。"],
+["11_Justice","正義","Justice","公平、責任、理性、因果與衡量。","偏見、逃避責任、不公平、資訊不足。","做決定前先把事實和感受分開，會更接近真正公平的選擇。"],
+["12_Hanged_Man","吊人","The Hanged Man","暫停、換角度、等待、主動放下。","拖延、無效犧牲、卡住、抗拒改變觀點。","有些停頓不是浪費時間，而是在讓你看到原本看不到的角度。"],
+["13_Death","死神","Death","結束、轉化、斷捨離、新階段。","抗拒結束、停滯、抓著過去、不願轉變。","死神通常象徵轉變而非字面死亡；有些結束是替下一階段騰出空間。"],
+["14_Temperance","節制","Temperance","平衡、整合、調整、耐心與協調。","失衡、過量、極端、節奏混亂。","穩定往往不是什麼都做到最好，而是找到可以長期維持的比例。"],
+["15_Devil","惡魔","The Devil","束縛、慾望、依賴、明知卻難以放下。","開始看見束縛、鬆綁、擺脫依賴、重新取得選擇。","最難掙脫的東西，往往是你已經習慣到不再察覺的模式。"],
+["16_Tower","高塔","The Tower","突變、真相揭露、舊結構崩解、重新建立。","延後爆發、害怕改變、危機內化、勉強維持。","高塔帶來的不一定是懲罰，有時只是不能再忽略的真相。"],
+["17_Star","星星","The Star","希望、療癒、信心、重新找到方向。","失望、自我懷疑、理想過遠、需要重新補充能量。","希望不是保證事情一定成功，而是讓你願意繼續往前的力量。"],
+["18_Moon","月亮","The Moon","不確定、潛意識、情緒、模糊與想像。","迷霧漸散、焦慮放大、真相浮現、需要釐清。","感覺很真實，但感覺不一定等於事實。"],
+["19_Sun","太陽","The Sun","清晰、活力、成功、喜悅與坦率。","短暫低潮、期待落差、過度樂觀、好事仍需努力。","享受順利的時刻，也別忘了成功通常來自之前的累積。"],
+["20_Judgement","審判","Judgement","覺醒、回顧、做出決定、重新出發。","自我否定、逃避決定、重複舊問題、害怕面對結果。","回顧過去不是為了責怪自己，而是為了讓下一次選擇更清楚。"],
+["21_World","世界","The World","完成、整合、成果、階段圓滿。","尚未完成、缺最後一步、延遲、需要收尾。","真正的完成不是完美，而是知道什麼時候該把成果交出去。"]
+];
+
+const themeAdvice={
+ "00_Fool":{
+  love:"感情上可能出現新的可能性，適合保持開放與自然互動，但不要因一時心動就忽略彼此是否真的適合。",
+  study:"適合嘗試新的學習方法或新的科目方向，先勇敢開始，再從實際結果中調整。",
+  work:"新的任務、職務或想法值得探索，但在投入前仍要確認基本條件與風險。",
+  social:"可能遇到新朋友或新的社交圈，保持輕鬆與好奇心，同時不要過度相信第一印象。",
+  daily:"今天適合嘗試平常不會做的事，給自己一點新鮮感，但重要決定仍要保留基本判斷。"
+ },
+ "01_Magician":{
+  love:"與其反覆猜測對方心意，不如主動而清楚地表達自己，關係會更容易往前。",
+  study:"你手上的教材、時間與能力其實已經足夠，現在最重要的是把資源整合並真正開始執行。",
+  work:"適合主動提出想法、展示能力或整合資源，你有機會把原本停留在想法的事情做出成果。",
+  social:"良好的表達能力會幫助你建立連結，但要避免只想主導對話而忽略別人的反應。",
+  daily:"今天行動力與掌控感較強，適合把拖延的事情真正開始做。"
+ },
+ "02_High_Priestess":{
+  love:"先觀察彼此真正的感受與行動，不需要急著逼出答案，有些訊息會隨時間變得更清楚。",
+  study:"遇到卡關時先整理資訊與理解脈絡，比一味增加讀書時間更有效。",
+  work:"目前可能還有尚未明朗的資訊，適合先觀察與蒐集資料，再做重要決定。",
+  social:"你的直覺可能察覺到一些細節，但不要只靠猜測判斷他人的心意。",
+  daily:"今天適合慢一點，注意內在感受以及那些平常容易忽略的小訊號。"
+ },
+ "03_Empress":{
+  love:"關係需要溫度、關心與實際照顧，但不要把維持關係的責任全部放在自己身上。",
+  study:"穩定累積與舒服的學習環境會比勉強自己硬撐更有效，照顧好狀態也是學習的一部分。",
+  work:"適合培養創意、長期成果與合作關係，不必急著要求立刻看到回報。",
+  social:"你的善意容易讓人感到安心，但也要避免為了照顧大家而忽略自己的需求。",
+  daily:"今天適合整理生活、照顧身體與環境，讓自己回到比較有餘裕的狀態。"
+ },
+ "04_Emperor":{
+  love:"把彼此的期待與界線說清楚，會比用控制或猜測換取安全感更健康。",
+  study:"建立固定讀書時間、明確目標與進度規則，會讓學習狀態更穩定。",
+  work:"先把責任、權限與優先順序排清楚，再處理複雜任務，效率會更高。",
+  social:"堅持原則沒有問題，但要小心不要因為想維持秩序而壓過別人的聲音。",
+  daily:"今天適合處理需要規劃、紀律與明確決定的事情。"
+ },
+ "05_Hierophant":{
+  love:"除了感覺，也要思考雙方對承諾、相處方式與未來的價值觀是否一致。",
+  study:"向老師、教材或成熟的方法學習，能幫助你少走彎路，先把基本功建立好。",
+  work:"理解制度、流程與既有規範會讓你更容易推進事情，再決定哪些地方值得改變。",
+  social:"群體規則能帶來安全感，但不需要為了合群而放棄自己重要的價值。",
+  daily:"今天適合向有經驗的人請教，也適合重新檢視自己的原則與習慣。"
+ },
+ "06_Lovers":{
+  love:"關係的核心在真誠選擇與價值一致，與其只追求心動，不如確認雙方是否願意朝同一方向前進。",
+  study:"面對多個學習方向時，選擇真正願意長期投入的目標，比什麼都碰一點更有效。",
+  work:"合作與重要決策需要確認彼此目標是否一致，條件好不代表一定適合。",
+  social:"在人際選擇上不要只為了取悅別人而站隊，先確認自己真正認同什麼。",
+  daily:"今天可能面臨選擇，先回到自己的核心價值，再決定要往哪裡走。"
+ },
+ "07_Chariot":{
+  love:"如果想讓關係往前，需要主動與明確，但也要確認對方是否願意以相近速度前進。",
+  study:"集中火力在一個明確目標上，持續推進會比頻繁換方法更容易看到成果。",
+  work:"現在適合果斷推進重要任務，但要避免只顧速度而忽略團隊節奏與細節。",
+  social:"堅定立場可以幫你保護自己，但不要把每次意見不同都當成勝負。",
+  daily:"今天適合處理拖延已久的事情，只要方向清楚，就不要被小干擾拉走。"
+ },
+ "08_Strength":{
+  love:"耐心與溫和溝通比硬碰硬更能處理關係中的不安，真正的安全感來自穩定而不是控制。",
+  study:"不要因一次失敗就否定能力，穩定重複與持續練習會慢慢把自信建立回來。",
+  work:"面對壓力先穩住節奏，你的耐性與情緒管理會比強勢推進更有影響力。",
+  social:"有界線不代表一定要激烈，平靜而堅定地表達立場同樣很有力量。",
+  daily:"今天可能需要多一點耐心，先把情緒安頓好，再處理真正的問題。"
+ },
+ "09_Hermit":{
+  love:"先給自己一些空間釐清真正想要的關係，不必因為害怕孤單就急著做決定。",
+  study:"適合安靜整理觀念、補足基礎與獨立思考，暫時少一點比較會更有幫助。",
+  work:"現在適合重新確認長期方向，先想清楚再決定下一步是否值得投入。",
+  social:"需要獨處很正常，但不要因為疲憊就完全切斷重要的人際連結。",
+  daily:"今天適合降低外界雜音，留一點時間整理自己的想法與狀態。"
+ },
+ "10_Wheel_of_Fortune":{
+  love:"關係可能進入新的階段或出現意外變化，保持彈性會比緊抓原本的相處方式更有利。",
+  study:"學習狀態本來就會有起伏，遇到低潮時調整策略，而不是直接把波動視為失敗。",
+  work:"環境、機會或人事可能出現變化，保持準備才能在轉機出現時抓住它。",
+  social:"人際關係會隨情境改變，不需要對每一次距離變化都過度解讀。",
+  daily:"今天可能有臨時變化或意外插曲，保留彈性會讓事情比較順。"
+ },
+ "11_Justice":{
+  love:"把雙方需求放在同一個標準下思考，不要只看自己的委屈，也不要忽略對方需要負的責任。",
+  study:"客觀看待成績與進度，找出真正需要改善的地方，比情緒化責怪自己有效。",
+  work:"重要決策應該依據事實、責任與長期影響，不宜只靠一時感覺。",
+  social:"遇到衝突時先確認事實與各方立場，再判斷誰該負什麼責任。",
+  daily:"今天適合處理需要判斷、整理、簽署或做決定的事情。"
+ },
+ "12_Hanged_Man":{
+  love:"先暫停追問答案，換個角度理解彼此的處境，有時不急著推進反而能看得更清楚。",
+  study:"如果原本的方法一直沒有效果，先停下來重新設計策略，而不是用更多時間硬撐。",
+  work:"目前未必適合強推進度，先釐清真正的卡點與必要犧牲，可能更有效率。",
+  social:"試著站在對方的位置看一次，但不要為了理解別人而無止境犧牲自己。",
+  daily:"今天遇到卡關時不要硬衝，暫停一下或換個方法可能反而更快。"
+ },
+ "13_Death":{
+  love:"某種相處模式可能需要結束或轉變，重點不是字面上的失去，而是放下已經失效的部分。",
+  study:"適合結束無效的讀書習慣或拖延模式，重新建立更適合現在自己的方法。",
+  work:"舊做法、舊專案或某個工作階段可能接近尾聲，準備接受新的安排。",
+  social:"有些關係需要重新定位，與其勉強維持原本形式，不如接受它正在改變。",
+  daily:"今天適合清理不再需要的事物、習慣或待辦，替新的階段騰出空間。"
+ },
+ "14_Temperance":{
+  love:"關係需要彼此調整節奏與期待，不必要求所有差異立刻消失。",
+  study:"安排好讀書、休息與生活的比例，持續性通常比偶爾爆發式努力更重要。",
+  work:"適合整合不同意見與資源，先找到可以長期運作的平衡方案。",
+  social:"在配合他人與保持自己之間找一個舒服的比例，避免一味迎合或完全拒絕。",
+  daily:"今天適合調整節奏、整理安排，避免把時間和精力塞得太滿。"
+ },
+ "15_Devil":{
+  love:"留意依賴、控制、佔有或反覆消耗的模式，不要把執著誤認為愛。",
+  study:"找出最常讓你分心或拖延的誘因，先處理那個固定模式，比責怪意志力更有效。",
+  work:"小心為了短期利益、薪資或安全感，被不健康的工作模式長期綁住。",
+  social:"注意是否因害怕失去關係而接受超過自己界線的要求。",
+  daily:"今天適合辨認一個正在消耗你的習慣，試著降低它對你的控制。"
+ },
+ "16_Tower":{
+  love:"如果問題已經累積很久，坦白面對真相會比維持表面和平更有幫助。",
+  study:"原本的計畫可能被打亂，先處理最關鍵的問題，再重新安排進度。",
+  work:"突發狀況可能迫使你改變做法，保持資訊透明並快速抓住核心問題。",
+  social:"衝突可能暴露真正的問題，與其只修補表面，不如處理關係中的根本原因。",
+  daily:"今天若出現意外變化，先穩住自己，再重新排列事情的優先順序。"
+ },
+ "17_Star":{
+  love:"關係仍有修復、重新理解或重新建立信任的空間，保持真誠但不要過度理想化。",
+  study:"目前可能逐漸找到方向，持續累積，不必因短期成果不明顯而失去信心。",
+  work:"長期目標值得繼續投入，把理想拆成可以執行的小步驟會更容易看見進展。",
+  social:"用比較真實的自己與人連結，不需要靠完美形象才能獲得認同。",
+  daily:"今天適合重新設定期待，給自己一點恢復、整理與重新出發的空間。"
+ },
+ "18_Moon":{
+  love:"不要只靠猜測判斷對方心意，模糊的地方最好用實際溝通確認。",
+  study:"焦慮可能讓問題看起來比實際更嚴重，先拆分任務並確認真正進度。",
+  work:"資訊不完整時不要急著做過度推論，重要事項最好再確認一次。",
+  social:"小心誤會與腦補，尤其不要把沉默直接解讀成拒絕或敵意。",
+  daily:"今天直覺較敏感，但重要判斷仍要回到可以確認的事實。"
+ },
+ "19_Sun":{
+  love:"坦率交流與共同享受相處時間，會讓關係更有活力，也更容易看清彼此。",
+  study:"目前適合積極推進，清楚看見自己的進步與成果會增加學習動力。",
+  work:"成果有機會被看見，主動展示進度、能力與貢獻會更有利。",
+  social:"真誠、開放與正向互動容易帶來好氣氛，不必刻意討好所有人。",
+  daily:"今天適合把握好狀態完成重要事情，也別忘了享受已經取得的成果。"
+ },
+ "20_Judgement":{
+  love:"回顧關係中反覆出現的模式，再決定是否要用不同方式繼續，而不是重演同一個問題。",
+  study:"檢視過去的錯誤與成果，把經驗轉化成下一階段更有效的學習策略。",
+  work:"適合做一次完整盤點，重要決策應建立在過去經驗與實際成果上。",
+  social:"若有一直沒有解決的問題，現在適合坦白面對並重新定義彼此關係。",
+  daily:"今天適合整理過去的事情，也適合做一個拖延已久的重要決定。"
+ },
+ "21_World":{
+  love:"一段關係或共同課題可能進入成熟階段，適合確認彼此對未來是否有共同方向。",
+  study:"長期累積開始形成完整成果，現在的重點是整理、收尾與把學到的內容整合起來。",
+  work:"專案或階段性目標接近完成，別忽略最後的確認、交付與成果整理。",
+  social:"你可能更清楚自己適合什麼樣的關係，也更能接受不同人之間的差異。",
+  daily:"今天適合完成一件拖了很久的事情，替下一個階段騰出空間。"
+ }
+};
+
+const TAROT=baseCards.map(([slug,cn,en,upright,reversed,reminder])=>({
+ slug,cn,en,upright,reversed,reminder,
+ themes:themeAdvice[slug]
+}));
+
+const state={theme:null,mode:null,cards:[],used:new Set(),readings:[]};
+const screens={home,shuffle,draw,result};
+
+function show(name){
+ Object.values(screens).forEach(s=>s.classList.remove("active"));
+ screens[name].classList.add("active");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function setSelected(container,key,value){
+ [...container.querySelectorAll(".choice")].forEach(b=>b.classList.toggle("selected",b.dataset[key]===value));
+}
+themeChoices.onclick=e=>{
+ const b=e.target.closest("[data-theme]"); if(!b)return;
+ state.theme=b.dataset.theme; setSelected(themeChoices,"theme",state.theme); ready();
+};
+modeChoices.onclick=e=>{
+ const b=e.target.closest("[data-mode]"); if(!b)return;
+ state.mode=b.dataset.mode; setSelected(modeChoices,"mode",state.mode); ready();
+};
+function ready(){startBtn.disabled=!(state.theme&&state.mode)}
+
+function shuffleArray(a){
+ a=[...a];
+ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+ return a;
+}
+function newRound(){
+ state.cards=shuffleArray(TAROT).map(c=>({...c,orientation:Math.random()<.5?"upright":"reversed"}));
+ state.used.clear(); state.readings=[];
+}
+function begin(){
+ newRound(); show("shuffle");
+ setTimeout(()=>{prepareDraw();show("draw")},2100);
+}
+startBtn.onclick=begin;
+
+function prepareDraw(){
+ const need=MODES[state.mode].positions.length;
+ drawTitle.textContent=state.mode==="single"?"選一張牌":"依序選出三張牌";
+ drawDesc.textContent=state.mode==="single"?"不要想太久，選擇第一張吸引你目光的牌。":"依序抽出「過去、現在、未來」，同一張牌不會重複。";
+ themePill.textContent="主題："+THEMES[state.theme].label;
+ modePill.textContent="牌陣："+MODES[state.mode].label;
+ progress.textContent=state.mode==="single"?"請選擇一張牌。":`現在要抽：${MODES[state.mode].positions[0]}（0 / ${need}）`;
+ deck.innerHTML="";
+ for(let i=0;i<10;i++){
+  const b=document.createElement("button");
+  b.className="pick"; b.dataset.index=i; b.setAttribute("aria-label",`第 ${i+1} 張蓋牌`);
+  deck.appendChild(b);
+ }
+}
+deck.onclick=e=>{
+ const b=e.target.closest(".pick"); if(!b||b.disabled)return;
+ const i=Number(b.dataset.index); if(state.used.has(i))return;
+ state.used.add(i); b.disabled=true;
+ const c=state.cards[i];
+ const position=MODES[state.mode].positions[state.readings.length];
+ state.readings.push({...c,position});
+ if(state.mode==="single"||state.readings.length===3){renderResults();return}
+ const next=MODES[state.mode].positions[state.readings.length];
+ progress.textContent=`已抽 ${state.readings.length} 張。現在要抽：${next}（${state.readings.length} / 3）`;
+ toastMsg(`已選定「${position}」牌`);
+};
+
+function localSrc(c){return `assets/rws_tarot_${c.slug.toLowerCase()}.webp`}
+function remoteSrc(c){
+ const f=`RWS_Tarot_${c.slug}-Vectorized.svg`;
+ return `https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(f)}`;
+}
+function orientation(c){return c.orientation==="upright"?"正位":"逆位"}
+function meaning(c){return c.orientation==="upright"?c.upright:c.reversed}
+function advice(c){
+ const base=c.themes[state.theme];
+ return c.orientation==="upright"
+  ?`${THEMES[state.theme].prefix}，${base}`
+  :`${THEMES[state.theme].prefix}，這張牌以逆位出現，建議你把「${c.reversed}」視為提醒；${base}`;
+}
+function renderResults(){
+ resultSub.textContent=`主題：${THEMES[state.theme].label}・${MODES[state.mode].label}`;
+ resultGrid.style.setProperty("--cols",state.readings.length);
+ resultGrid.innerHTML="";
+ state.readings.forEach(c=>{
+  const el=document.createElement("article"); el.className="reading";
+  el.innerHTML=`
+   <div class="visual">
+    <img class="${c.orientation==="reversed"?"reversed":""}" src="${localSrc(c)}" data-remote="${remoteSrc(c)}" alt="${c.cn} ${orientation(c)}">
+    <div class="fallback"><div>✦<br><br>${c.cn}<br>${c.en}<br><small>尚未找到圖片</small></div></div>
+   </div>
+   <div class="body">
+    <div class="pos">${c.position}</div>
+    <div class="title-row"><h3>${c.cn} <span style="font-size:.8em;color:#baaac8;font-weight:400">${c.en}</span></h3><span class="badge">${orientation(c)}</span></div>
+    <div class="block"><strong>牌義</strong><p>${meaning(c)}</p></div>
+    <div class="block"><strong>${THEMES[state.theme].label}建議</strong><p>${advice(c)}</p></div>
+    <div class="block"><strong>提醒事項</strong><p>${c.reminder}</p></div>
+   </div>`;
+  const img=el.querySelector("img"), fallback=el.querySelector(".fallback");
+  img.onerror=()=>{
+    if(img.dataset.tried==="1"){img.style.display="none";fallback.style.display="grid";return}
+    img.dataset.tried="1";img.src=img.dataset.remote;
+  };
+  resultGrid.appendChild(el);
+ });
+ show("result");
+}
+restartBtn.onclick=begin;
+againBtn.onclick=()=>{state.mode="single";setSelected(modeChoices,"mode","single");begin()};
+homeBtn.onclick=()=>{
+ state.theme=null;state.mode=null;state.readings=[];
+ document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected"));
+ ready();show("home");
+};
+function toastMsg(t){
+ toast.textContent=t;toast.classList.add("show");
+ clearTimeout(toastMsg.timer);toastMsg.timer=setTimeout(()=>toast.classList.remove("show"),1200);
+}
+</script>
+</body>
+</html>
